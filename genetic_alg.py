@@ -7,6 +7,8 @@ import multiprocessing
 from joblib import Parallel, delayed
 
 
+
+
 class Individuo:
     def __init__(self, long_gen):
         self.long_gen = long_gen

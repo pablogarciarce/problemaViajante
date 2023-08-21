@@ -18,11 +18,11 @@ class RunSimulation:
         self.prob_mutacion = config['prob_mutacion']
         self.max_ite = config['max_ite']
 
-        self.individuos = Poblacion(self.num_individuos, self.num_ciudades)
+        self.distancias = np.load(distancias_path)
+
+        self.individuos = Poblacion(self.num_individuos, self.num_ciudades, self.distancias)
         with open(cities_path) as f:
             self.ciudades = json.load(f)
-
-        self.distancias = np.load(distancias_path)
 
     def simulate(self, paciencia=10):
         mejor = []
@@ -52,13 +52,14 @@ class RunSimulation:
         print(mejor[len(mejor)-1])
         self.representar_solucion(self.individuos.mejor_individuo)
 
-    def simulate_probs(self, probs_cruce, ejecuciones, paciencia=10):
+    def simulate_probs(self, probs_cruce, ejecuciones, paciencia=100):
         for prob in probs_cruce:
             print('Probabilidad de cruce: ', prob)
             for ej in ejecuciones:
+                path = f'results/{self.num_ciudades}ciudades_pc{prob:.1f}_e{ej}.csv'
                 print('EJECUCION ', ej)
-                df = pd.DataFrame(index=range(self.max_ite), columns=['Mejor', 'Media', 'Std', 'Mejor ind'])
-                self.individuos = Poblacion(self.num_individuos, self.num_ciudades)
+                df = pd.DataFrame(index=range(self.max_ite), columns=['Mejor', 'Media', 'Std', 'Mejor_ind'])
+                self.individuos = Poblacion(self.num_individuos, self.num_ciudades, self.distancias)
                 self.individuos.evaluar(self.distancias)
                 mejor_media = np.inf
                 cont_paciencia = 0
@@ -79,8 +80,8 @@ class RunSimulation:
                         cont_paciencia += 1
                         if cont_paciencia > paciencia:
                             break
-                path = 'results/' + str(self.num_ciudades) + 'ciudades_pc' + str(prob) + '_e' + str(ej) + '.csv'
-                df.to_csv(path)
+                    if i+1 % 1000 == 0:
+                        df.to_csv(path)
 
     def representar_solucion(self, individuo):
         ciudad_x = [ciudad[0] for ciudad in self.ciudades]
@@ -96,14 +97,15 @@ class RunSimulation:
 
 if __name__ == '__main__':
     conf_path = 'config.json'
-    path_ciudades = 'data/ciudades10000.json'
-    distancias_path = 'distancias/ciudades10000.npy'
+    path_ciudades = 'data/ciudades100.json'
+    distancias_path = 'distancias/ciudades100.npy'
 
-    # RunSimulation(conf_path, path_ciudades, distancias_path).simulate(paciencia=2)
+    # RunSimulation(conf_path, path_ciudades, distancias_path).simulate(paciencia=200)
 
     RunSimulation(conf_path, path_ciudades, distancias_path).simulate_probs(
-        np.linspace(1, 0, 11),
-        [3]
+        np.linspace(0.0, 1.0, 11),
+        [0, 1, 2, 3, 4],
+        paciencia=1000
     )
 
 

@@ -73,12 +73,16 @@ julia_compatible.eval(codigo_julia)
 
 # Define la función de cruce parcialmente mapeado en Julia usando PyCall
 def cruce_pm_julia(pareja):
-    genotipos = (pareja[0].genotipo, pareja[1].genotipo)
+    genotipos = (
+        [gen + 1 for gen in pareja[0].genotipo],
+        [gen + 1 for gen in pareja[1].genotipo])
     # Llama a la función cruce_pm en Julia directamente desde Python
     julia_compatible.eval("@eval Main using .MyJuliaModule")
     genotipos_hijos = julia_compatible.eval("Main.MyJuliaModule.cruce_pm")(genotipos)
-    return [pareja[0].copiar().asignar_genotipo(genotipos_hijos[0]),
-            pareja[1].copiar().asignar_genotipo(genotipos_hijos[1])]
+    h1 = [gen - 1 for gen in genotipos_hijos[0]]
+    h2 = [gen - 1 for gen in genotipos_hijos[1]]
+    return [pareja[0].copiar().asignar_genotipo(h1),
+            pareja[1].copiar().asignar_genotipo(h2)]
 
 
 class Individuo:
@@ -124,15 +128,15 @@ class Individuo:
 
 
 class Poblacion:
-    def __init__(self, num_individuos, num_ciudades):
+    def __init__(self, num_individuos, num_ciudades, distancias):
         self.num_individuos = num_individuos
         self.num_ciudades = num_ciudades
         self.poblacion = [Individuo(num_ciudades).init_aleatorio() for _ in range(num_individuos)]
-        self.mejor_individuo = None
+        self.evaluar(distancias)
+        self.mejor_individuo = seleccionar(self.poblacion).copiar()
 
     def seleccion_padres(self, gamma):
         padres = []
-        self.mejor_individuo = seleccionar(self.poblacion).copiar()
         for i in range(self.num_individuos):
             torneo = random.sample(self.poblacion, gamma)
             padres.append(seleccionar(torneo).copiar())
@@ -166,7 +170,7 @@ class Poblacion:
         # num_cores = multiprocessing.cpu_count()
         # extra_hijos = Parallel(n_jobs=8)(delayed(cruce_pm_julia)(p) for p in parejas_cruce)
         try:
-            extra_hijos = [cruce_pm_julia(p) for p in parejas_cruce]
+            extra_hijos = [cruce_pm_julia(p.copy()) for p in parejas_cruce]
         except:
             print('ERROR DE JULIA DURANTE EL CRUCE')
             extra_hijos = parejas_cruce
@@ -229,7 +233,9 @@ class Poblacion:
         nuevo_mejor = seleccionar(self.poblacion)
         if self.mejor_individuo.valor < nuevo_mejor.valor:
             self.poblacion.remove(seleccionar(self.poblacion, mejor=False))
-            self.poblacion.append(self.mejor_individuo)
+            self.poblacion.append(self.mejor_individuo.copiar())
+        else:
+            self.mejor_individuo = nuevo_mejor.copiar()
 
     def evaluar(self, distancias):
         for ind in self.poblacion:

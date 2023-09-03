@@ -294,7 +294,7 @@ end
 
 
 conf_path = "config.json"
-distancias_path = "distancias/ciudades100.npy"
+distancias_path = "distancias/ciudades10000.npy"
 
 sim = RunSimulation(conf_path, distancias_path)
-simulate_probs(sim, range(0.0, step=0.1, stop=1.0), [0,1,2,3,4])
+simulate_probs(sim, range(1, step=0.1, stop=1.0), [11, 12])

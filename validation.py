@@ -75,5 +75,13 @@ def plot_pc(num_ciudades):
 
 
 if __name__ == '__main__':
+    print(pd.read_csv('results/julia/10000ciudades_pc0.9_e11.csv')['Mejor'][-1:])
+    print(pd.read_csv('results/julia/10000ciudades_pc1.0_e11.csv')['Mejor'][-1:])
+    pd.read_csv('results/julia/10000ciudades_pc0.9_e11.csv')['Mejor'].plot()
+    pd.read_csv('results/julia/10000ciudades_pc1.0_e11.csv')['Mejor'].plot()
+    plt.xlabel('Iteración')
+    plt.ylabel('Distancia total recorrida')
+    plt.legend(['0.9', '1.0'])
+    plt.show()
     main(100)
 

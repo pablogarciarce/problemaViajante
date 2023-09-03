@@ -56,9 +56,8 @@ class RunSimulation:
         for prob in probs_cruce:
             print('Probabilidad de cruce: ', prob)
             for ej in ejecuciones:
-                path = f'results/{self.num_ciudades}ciudades_pc{prob:.1f}_e{ej}.csv'
                 print('EJECUCION ', ej)
-                df = pd.DataFrame(index=range(self.max_ite), columns=['Mejor', 'Media', 'Std', 'Mejor_ind'])
+                df = pd.DataFrame(index=range(self.max_ite), columns=['Mejor', 'Media', 'Std', 'Mejor ind'])
                 self.individuos = Poblacion(self.num_individuos, self.num_ciudades, self.distancias)
                 self.individuos.evaluar(self.distancias)
                 mejor_media = np.inf
@@ -80,8 +79,8 @@ class RunSimulation:
                         cont_paciencia += 1
                         if cont_paciencia > paciencia:
                             break
-                    if i+1 % 1000 == 0:
-                        df.to_csv(path)
+                path = 'results/asdf/' + str(self.num_ciudades) + 'ciudades_pc' + str(round(prob, 1)) + '_e' + str(ej) + '.csv'
+                df.to_csv(path)
 
     def representar_solucion(self, individuo):
         ciudad_x = [ciudad[0] for ciudad in self.ciudades]
@@ -100,12 +99,12 @@ if __name__ == '__main__':
     path_ciudades = 'data/ciudades100.json'
     distancias_path = 'distancias/ciudades100.npy'
 
-    # RunSimulation(conf_path, path_ciudades, distancias_path).simulate(paciencia=200)
+    RunSimulation(conf_path, path_ciudades, distancias_path).simulate(paciencia=10)
 
     RunSimulation(conf_path, path_ciudades, distancias_path).simulate_probs(
-        np.linspace(0.0, 1.0, 11),
+        np.linspace(1, 0, 11),
         [0, 1, 2, 3, 4],
-        paciencia=1000
+        paciencia=2000
     )
 
 
